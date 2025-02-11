@@ -46,6 +46,14 @@ pub struct Token {
     pub end: usize,
 }
 
+fn create_token(token_type: TokenType, value: &str, start: usize, end: usize) -> Token {
+    Token {
+        token_type,
+        value: value.to_string(),
+        start,
+        end,
+    }
+}
 
 pub fn tokenize(source_code: &str) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
@@ -59,21 +67,25 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
 
         if let Some(m) = whitespace_regex.find(curr_substring) {
             let matched_str = m.as_str();
-            tokens.push(Token {
-                token_type: TokenType::Whitespace,
-                value: matched_str.to_string(),
-                start: index,
-                end: index + matched_str.len(),
-            });
+            tokens.push(
+                create_token(
+                    TokenType::Whitespace,
+                    matched_str,
+                    index,
+                    index + matched_str.len()
+                )
+            );
             index += matched_str.len();
         } else if let Some(m) = line_break_regex.find(curr_substring) {
             let matched_str = m.as_str();
-            tokens.push(Token {
-                token_type: TokenType::LineBreak,
-                value: matched_str.to_string(),
-                start: index,
-                end: index + matched_str.len(),
-            });
+            tokens.push(
+                create_token(
+                    TokenType::LineBreak,
+                    matched_str,
+                    index, 
+                    index + matched_str.len()
+                )
+            );
             index += matched_str.len();
         } 
         else {
