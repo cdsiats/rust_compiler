@@ -61,6 +61,7 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
     let line_break_regex = Regex::new(r"^(\n|\r|\r\n)").unwrap();
     //Matches keywords as whole words
     let keywords_regex = Regex::new(r"^(plugin|use|prop|enum|type|model|String|Number|Boolean|Text|Date)\b").unwrap();
+    let identifier_regex = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*").unwrap();
 
     while index < source_code.len() {
         let curr_substring = &source_code[index..];
@@ -96,6 +97,12 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
                 create_token(token_type, matched_keyword, index, index + matched_keyword.len())
             );
             index += matched_keyword.len();
+        } else if let Some(m) = identifier_regex.find(curr_substring) {
+            let matched_identifier = m.as_str();
+            tokens.push(
+                create_token(TokenType::Identifier, matched_identifier, index, index + matched_identifier.len())
+            );
+            index += matched_identifier.len();
         }
         else {
             index += 1;
