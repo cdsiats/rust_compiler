@@ -52,7 +52,7 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
     let mut index: usize = 0;
 
     let whitespace_regex = Regex::new(r"^[ \t]+").unwrap();
-    let line_break_regex = Regex::new(r"^(\n|\r|\r\n|\n\r)").unwrap();
+    let line_break_regex = Regex::new(r"^(\n|\r|\r\n)").unwrap();
 
     while index < source_code.len() {
         let curr_substring = &source_code[index..];
