@@ -63,7 +63,7 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
     let keywords_regex = Regex::new(r"^(plugin|use|prop|enum|type|model|String|Number|Boolean|Text|Date)\b").unwrap();
     let identifier_regex = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*").unwrap();
     let string_literal_regex = Regex::new(r#"^"([^"]+)""#).unwrap();
-    let integer_literal_regex = Regex::new(r"^-?[0-9]+").unwrap();
+    let number_literal_regex = Regex::new(r"^-?\d+(\.\d+)?").unwrap();
 
     while index < source_code.len() {
         let curr_substring = &source_code[index..];
@@ -107,7 +107,7 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
                 create_token(token_type, matched_keyword, index, index + matched_keyword.len())
             );
             index += matched_keyword.len();
-        } else if let Some(m) = integer_literal_regex.find(curr_substring) {
+        } else if let Some(m) = number_literal_regex.find(curr_substring) {
             let matched_int = m.as_str();
             tokens.push(
                 create_token(TokenType::NumberLiteral, matched_int, index, index + matched_int.len())
@@ -251,26 +251,23 @@ mod tests {
     }
 
     #[test]
-    fn tokenize_integers() {
-        let source = "4 44 444 -4 -44";
+    fn tokenize_numbers() {
+        let source = "4 4.4 44 -44.4";
         let tokens = tokenize(source);
 
-        assert_eq!(tokens.len(), 5);
-        if tokens.len() >= 5 {
+        assert_eq!(tokens.len(), 4);
+        if tokens.len() >= 4 {
             assert_eq!(tokens[0].token_type, TokenType::NumberLiteral);
             assert_eq!(tokens[0].value, "4");
 
             assert_eq!(tokens[1].token_type, TokenType::NumberLiteral);
-            assert_eq!(tokens[1].value, "44");
+            assert_eq!(tokens[1].value, "4.4");
 
             assert_eq!(tokens[2].token_type, TokenType::NumberLiteral);
-            assert_eq!(tokens[2].value, "444");
+            assert_eq!(tokens[2].value, "44");
 
             assert_eq!(tokens[3].token_type, TokenType::NumberLiteral);
-            assert_eq!(tokens[3].value, "-4");
-
-            assert_eq!(tokens[4].token_type, TokenType::NumberLiteral);
-            assert_eq!(tokens[4].value, "-44");
+            assert_eq!(tokens[3].value, "-44.4");
         }
     }
 }
