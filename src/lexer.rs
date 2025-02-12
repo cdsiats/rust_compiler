@@ -62,6 +62,7 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
     //Matches keywords as whole words
     let keywords_regex = Regex::new(r"^(plugin|use|prop|enum|type|model|String|Number|Boolean|Text|Date)\b").unwrap();
     let identifier_regex = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*").unwrap();
+    let string_literal_regex = Regex::new(r#"^"([^"]+)""#).unwrap();
 
     while index < source_code.len() {
         let curr_substring = &source_code[index..];
@@ -77,6 +78,16 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
                 )
             );
             index += matched_str.len();
+
+        } else if let Some(m) = string_literal_regex.captures(curr_substring) { // Check STRING LITERALS FIRST
+            let matched_literal = m.get(0).unwrap().as_str();
+
+            println!("String Literal Match: {:?}", matched_literal);
+
+            tokens.push(
+                create_token(TokenType::StringLiteral, matched_literal, index, index + matched_literal.len())
+            );
+            index += matched_literal.len();
         } else if let Some(m) = keywords_regex.find(curr_substring) {
             let matched_keyword = m.as_str();
             let token_type = match matched_keyword {
@@ -103,8 +114,9 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
                 create_token(TokenType::Identifier, matched_identifier, index, index + matched_identifier.len())
             );
             index += matched_identifier.len();
-        }
+        } 
         else {
+            println!("No match, incrementing index");
             index += 1;
         }
     }
@@ -209,6 +221,27 @@ mod tests {
 
             assert_eq!(tokens[6].token_type, TokenType::Identifier);
             assert_eq!(tokens[6].value, "customType");
+        }
+    }
+
+    #[test]
+    fn tokenize_string_literals() {
+        let source = "\"hello\" \"world\" \"This is a string with spaces\"";
+        let tokens = tokenize(source);
+
+        println!("{:#?}", source);
+        println!("{:#?}", tokens);
+
+        assert_eq!(tokens.len(), 3);
+        if tokens.len() >= 2 {
+            assert_eq!(tokens[0].token_type, TokenType::StringLiteral);
+            assert_eq!(tokens[0].value, "\"hello\"");
+
+            assert_eq!(tokens[1].token_type, TokenType::StringLiteral);
+            assert_eq!(tokens[1].value, "\"world\"");
+
+            assert_eq!(tokens[2].token_type, TokenType::StringLiteral);
+            assert_eq!(tokens[2].value, "\"This is a string with spaces\"");
         }
     }
 }
