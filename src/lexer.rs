@@ -63,6 +63,7 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
     let keywords_regex = Regex::new(r"^(plugin|use|prop|enum|type|model|String|Number|Boolean|Text|Date)\b").unwrap();
     let identifier_regex = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*").unwrap();
     let string_literal_regex = Regex::new(r#"^"([^"]+)""#).unwrap();
+    let integer_literal_regex = Regex::new(r"^-?[0-9]+").unwrap();
 
     while index < source_code.len() {
         let curr_substring = &source_code[index..];
@@ -79,10 +80,8 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
             );
             index += matched_str.len();
 
-        } else if let Some(m) = string_literal_regex.captures(curr_substring) { // Check STRING LITERALS FIRST
+        } else if let Some(m) = string_literal_regex.captures(curr_substring) { 
             let matched_literal = m.get(0).unwrap().as_str();
-
-            println!("String Literal Match: {:?}", matched_literal);
 
             tokens.push(
                 create_token(TokenType::StringLiteral, matched_literal, index, index + matched_literal.len())
@@ -108,6 +107,12 @@ pub fn tokenize(source_code: &str) -> Vec<Token> {
                 create_token(token_type, matched_keyword, index, index + matched_keyword.len())
             );
             index += matched_keyword.len();
+        } else if let Some(m) = integer_literal_regex.find(curr_substring) {
+            let matched_int = m.as_str();
+            tokens.push(
+                create_token(TokenType::NumberLiteral, matched_int, index, index + matched_int.len())
+            );
+            index += matched_int.len();
         } else if let Some(m) = identifier_regex.find(curr_substring) {
             let matched_identifier = m.as_str();
             tokens.push(
@@ -250,8 +255,8 @@ mod tests {
         let source = "4 44 444 -4 -44";
         let tokens = tokenize(source);
 
-        assert_eq!(tokens.len(), 4);
-        if tokens.len() >= 4 {
+        assert_eq!(tokens.len(), 5);
+        if tokens.len() >= 5 {
             assert_eq!(tokens[0].token_type, TokenType::NumberLiteral);
             assert_eq!(tokens[0].value, "4");
 
