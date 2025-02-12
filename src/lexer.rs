@@ -244,4 +244,28 @@ mod tests {
             assert_eq!(tokens[2].value, "\"This is a string with spaces\"");
         }
     }
+
+    #[test]
+    fn tokenize_integers() {
+        let source = "4 44 444 -4 -44";
+        let tokens = tokenize(source);
+
+        assert_eq!(tokens.len(), 4);
+        if tokens.len() >= 4 {
+            assert_eq!(tokens[0].token_type, TokenType::NumberLiteral);
+            assert_eq!(tokens[0].value, "4");
+
+            assert_eq!(tokens[1].token_type, TokenType::NumberLiteral);
+            assert_eq!(tokens[1].value, "44");
+
+            assert_eq!(tokens[2].token_type, TokenType::NumberLiteral);
+            assert_eq!(tokens[2].value, "444");
+
+            assert_eq!(tokens[3].token_type, TokenType::NumberLiteral);
+            assert_eq!(tokens[3].value, "-4");
+
+            assert_eq!(tokens[4].token_type, TokenType::NumberLiteral);
+            assert_eq!(tokens[4].value, "-44");
+        }
+    }
 }
